@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KuotaDeposit | Gateway Pembayaran</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --accent: #f72585;
+            --dark: #1a1a2e;
+            --light: #f8f9fa;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease;
+        }
+        
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            color: #d0d0d0;
+            line-height: 1.6;
+        }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            color: #333;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            z-index: 0;
+        }
+        
+        .card-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card h2 i {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            background: rgba(255,255,255,0.8);
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(67, 97, 238, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-success {
+            background: linear-gradient(45deg, #00b09b, #96c93d);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+            color: #333;
+        }
+        
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            margin: 25px 0;
+        }
+        
+        #qrcode {
+            padding: 15px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .payment-info {
+            background: rgba(67, 97, 238, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .payment-info p {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .payment-info span:first-child {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .status-container {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .status-pending {
+            background: rgba(255, 193, 7, 0.15);
+            color: #ffc107;
+        }
+        
+        .status-success {
+            background: rgba(40, 167, 69, 0.15);
+            color: #28a745;
+        }
+        
+        .status-failed {
+            background: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+        }
+        
+        .loader {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 5px solid var(--primary);
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            background: var(--card-bg);
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateX(200%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-left: 5px solid #28a745;
+        }
+        
+        .notification.error {
+            border-left: 5px solid #dc3545;
+        }
+        
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(255,255,255,0.2);
+            z-index: 0;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .step.active .step-number {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            box-shadow: 0 0 15px rgba(67, 97, 238, 0.5);
+        }
+        
+        .step-text {
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .steps {
+                flex-direction: column;
+                align-items: center;
+                gap: 30px;
+            }
+            
+            .steps::before {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+  <div class="container">
+        <header>
+            <h1><i class="fas fa-wifi"></i> KuotaDeposit</h1>
+            <p>Gateway pembayaran modern untuk pembelian kuota internet dengan proses cepat dan aman</p>
+        </header>
+        
+        <div class="steps">
+            <div class="step active">
+                <div class="step-number">1</div>
+                <div class="step-text">Isi Detail</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-text">Pembayaran</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-text">Selesai</div>
+            </div>
+        </div>
+        
+        <div class="card-grid">
+            <div class="card">
+                <div class="card-content">
+                    <h2><i class="fas fa-shopping-cart"></i> Pesanan Kuota</h2>
+                    
+                    <div class="form-group">
+                        <label for="package">Pilih Paket Kuota</label>
+                        <select id="package">
+                            <option value="">-- Pilih Paket --</option>
+                            <option value="5000">Paket 1GB - Rp 5.000</option>
+                            <option value="10000">Paket 3GB - Rp 10.000</option>
+                            <option value="20000">Paket 8GB - Rp 20.000</option>
+                            <option value="50000">Paket 20GB - Rp 50.000</option>
+                            <option value="100000">Paket 50GB - Rp 100.000</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Nomor Handphone</label>
+                        <input type="tel" id="phone" placeholder="Contoh: 081234567890">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="custom-amount">Atau Masukkan Jumlah Deposit (Rp)</label>
+                        <input type="number" id="custom-amount" placeholder="Masukkan jumlah deposit">
+                    </div>
+                    
+                    <button class="btn" id="pay-btn">
+                        <i class="fas fa-credit-card"></i> Lanjutkan Pembayaran
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-content">
+                    <h2><i class="fas fa-qrcode"></i> Pembayaran</h2>
+                    <div id="payment-section" class="hidden">
+                        <div class="qr-container">
+                            <div id="qrcode"></div>
+                        </div>
+                        
+                        <div class="payment-info">
+                            <p>
+                                <span>Jumlah:</span>
+                                <span id="amount-text">Rp 0</span>
+                            </p>
+                            <p>
+                                <span>Metode:</span>
+                                <span>QRIS (Semua E-Wallet)</span>
+                            </p>
+                            <p>
+                                <span>Merchant:</span>
+                                <span>LUXX STORE</span>
+                            </p>
+                        </div>
+                        
+                        <p style="text-align: center; margin: 20px 0; color: #666;">
+                            Scan QR code di atas menggunakan aplikasi e-wallet (Gopay, OVO, Dana, LinkAja, dll)
+                        </p>
+                        
+                        <button class="btn btn-success" id="check-status-btn">
+                            <i class="fas fa-sync-alt"></i> Cek Status Pembayaran
+                        </button>
+                    </div>
+                    
+                    <div id="init-payment-text" style="text-align: center; padding: 40px 0; color: #666;">
+                        <i class="fas fa-qrcode" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                        <p>Silakan isi detail pesanan untuk menampilkan QR pembayaran</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-content">
+                    <h2><i class="fas fa-check-circle"></i> Status</h2>
+                    <div id="status-section" class="hidden">
+                        <div class="status-container status-pending">
+                            <i class="fas fa-spinner fa-spin" style="font-size: 2.5rem; margin-bottom: 15px;"></i>
+                            <h3>Menunggu Pembayaran</h3>
+                            <p>Silakan selesaikan pembayaran Anda</p>
+                        </div>
+                        
+                        <div class="payment-info">
+                            <p>
+                                <span>ID Transaksi:</span>
+                                <span id="trx-id">OK1520142-412735917</span>
+                            </p>
+                            <p>
+                                <span>Waktu:</span>
+                                <span id="trx-time">17 Juli 2025, 14:30 WIB</span>
+                            </p>
+                        </div>
+                        
+                        <div id="success-message" class="hidden">
+                            <div class="status-container status-success">
+                                <i class="fas fa-check-circle" style="font-size: 2.5rem; margin-bottom: 15px;"></i>
+                                <h3>Pembayaran Berhasil!</h3>
+                                <p>Kuota akan segera ditambahkan ke nomor Anda</p>
+                            </div>
+                            
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-redo"></i> Buat Pesanan Baru
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="init-status-text" style="text-align: center; padding: 40px 0; color: #666;">
+                        <i class="fas fa-info-circle" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                        <p>Status pembayaran akan muncul setelah Anda melakukan transaksi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>&copy; 2025 KuotaDeposit. Layanan gateway pembayaran untuk pembelian kuota internet.</p>
+            <p>Support: support@kuotadeposit.id | 24/7 Customer Service</p>
+        </footer>
+    </div>
+    
+    <div class="notification hidden">
+        <p>Pesan notifikasi</p>
+    </div>
+    
+    <script>
+        // Konfigurasi
+        const UrlQr = "00020101021126670016COM.NOBUBANK.WWW01189360050300000879140214013504675598050303UMI51440014ID.CO.QRIS.WWW0215ID20243116137470303UMI5204541153033605802ID5920LUXX STORE OK15201426005METRO61053411162070703A016304FF6B";
+        const apiKey = "alfixkiabdg";
+        const createPaymentUrl = "https://restapi.rafatharcode.apibotwa.biz.id/api/orkut/createpayment";
+        const checkStatusUrl = "https://restapi.rafatharcode.apibotwa.biz.id/api/orkut/cekstatus";
+        
+        // Elemen DOM
+        const payBtn = document.getElementById('pay-btn');
+        const checkStatusBtn = document.getElementById('check-status-btn');
+        const paymentSection = document.getElementById('payment-section');
+        const initPaymentText = document.getElementById('init-payment-text');
+        const statusSection = document.getElementById('status-section');
+        const initStatusText = document.getElementById('init-status-text');
+        const amountText = document.getElementById('amount-text');
+        const qrcodeEl = document.getElementById('qrcode');
+        const notification = document.querySelector('.notification');
+        const steps = document.querySelectorAll('.step');
+        
+        // Event listeners
+        payBtn.addEventListener('click', createPayment);
+        checkStatusBtn.addEventListener('click', checkPaymentStatus);
+        
+        // Fungsi untuk menampilkan notifikasi
+        function showNotification(message, isSuccess = true) {
+            notification.innerHTML = `<p>${message}</p>`;
+            notification.className = `notification ${isSuccess ? 'success' : 'error'}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Fungsi untuk membuat pembayaran
+        function createPayment() {
+            const packageValue = document.getElementById('package').value;
+            const customAmount = document.getElementById('custom-amount').value;
+            const phone = document.getElementById('phone').value;
+            
+            let amount = 0;
+            
+            // Validasi input
+            if (!packageValue && !customAmount) {
+                showNotification('Silakan pilih paket atau masukkan jumlah deposit', false);
+                return;
+            }
+            
+            if (!phone) {
+                showNotification('Silakan masukkan nomor handphone', false);
+                return;
+            }
+            
+            if (phone.length < 10) {
+                showNotification('Nomor handphone tidak valid', false);
+                return;
+            }
+            
+            // Tentukan jumlah
+            if (customAmount) {
+                amount = parseInt(customAmount);
+            } else {
+                amount = parseInt(packageValue);
+            }
+            
+            if (amount < 5000) {
+                showNotification('Jumlah deposit minimal Rp 5.000', false);
+                return;
+            }
+            
+            // Tampilkan loading
+            payBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            payBtn.disabled = true;
+            
+            // Simulasikan panggilan API
+            setTimeout(() => {
+                // URL API dengan parameter
+                const apiUrl = `${createPaymentUrl}?apikey=${apiKey}&amount=${amount}&codeqr=${encodeURIComponent(UrlQr)}`;
+                
+                // Tampilkan di console untuk debugging
+                console.log("API Create Payment:", apiUrl);
+                
+                // Update UI dengan data pembayaran
+                amountText.textContent = `Rp ${amount.toLocaleString('id-ID')}`;
+                
+                // Generate QR Code
+                qrcodeEl.innerHTML = '';
+                new QRCode(qrcodeEl, {
+                    text: UrlQr,
+                    width: 200,
+                    height: 200,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+                
+                // Tampilkan section pembayaran
+                paymentSection.classList.remove('hidden');
+                initPaymentText.classList.add('hidden');
+                
+                // Tampilkan section status
+                statusSection.classList.remove('hidden');
+                initStatusText.classList.add('hidden');
+                
+                // Update status step
+                steps[0].classList.remove('active');
+                steps[1].classList.add('active');
+                
+                // Reset tombol
+                payBtn.innerHTML = '<i class="fas fa-credit-card"></i> Lanjutkan Pembayaran';
+                payBtn.disabled = false;
+                
+                showNotification('Pembayaran berhasil dibuat. Silakan scan QR code untuk melanjutkan');
+            }, 1500);
+        }
+        
+        // Fungsi untuk cek status pembayaran
+        function checkPaymentStatus() {
+            // Tampilkan loading
+            checkStatusBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memeriksa...';
+            checkStatusBtn.disabled = true;
+            
+            // Simulasikan panggilan API
+            setTimeout(() => {
+                // Parameter untuk API
+                const merchant = "OK1520142";
+                const keyorkut = "412735917371432671520142OKCTBFE09BF2727F30ED6E39CFBC6315EC23";
+                
+                // URL API
+                const apiUrl = `${checkStatusUrl}?apikey=${apiKey}&merchant=${merchant}&keyorkut=${keyorkut}`;
+                
+                // Tampilkan di console untuk debugging
+                console.log("API Check Status:", apiUrl);
+                
+                // Simulasikan status berhasil (dalam real app, ini dari response API)
+                const isSuccess = Math.random() > 0.3; // 70% success rate untuk demo
+                
+                if (isSuccess) {
+                    // Tampilkan status sukses
+                    document.getElementById('success-message').classList.remove('hidden');
+                    
+                    // Update status step
+                    steps[1].classList.remove('active');
+                    steps[2].classList.add('active');
+                    
+                    showNotification('Pembayaran berhasil! Kuota akan segera ditambahkan');
+                } else {
+                    showNotification('Pembayaran belum diterima. Silakan coba lagi', false);
+                }
+                
+                // Reset tombol
+                checkStatusBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Cek Status Pembayaran';
+                checkStatusBtn.disabled = false;
+            }, 2000);
+        }
+        
+        // Inisialisasi
+        document.getElementById('package').addEventListener('change', function() {
+            if (this.value) {
+                document.getElementById('custom-amount').value = '';
+            }
+        });
+        
+        document.getElementById('custom-amount').addEventListener('input', function() {
+            if (this.value) {
+                document.getElementById('package').value = '';
+            }
+        });
+    </script>
+</body>
+</html>
